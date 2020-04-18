@@ -1,30 +1,25 @@
 service:
   name: cloud-dev-capstone
-# app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
 
-custom:
-  webpack:
-    webpackConfig: ./webpack.config.js
-    includeModules: true
-
-# Add the serverless-webpack plugin
 plugins:
   - serverless-webpack
 
 provider:
   name: aws
   runtime: nodejs12.x
-  apiGateway:
-    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
-  environment:
-    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
 
 functions:
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
+
   hello:
-    handler: handler.hello
+    handler: src/lambda/http/handler.handler
     events:
       - http:
           method: get
           path: hello
+          cors: true
+          authorizer: Auth
