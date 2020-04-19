@@ -6,7 +6,8 @@ import Auth from './auth/Auth'
 import { EditTodo } from './components/EditTodo'
 import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
-import { Todos } from './components/Todos'
+import { Pets } from './components/Pets'
+import { CreatePet } from './components/CreatePet'
 
 export interface AppProps {}
 
@@ -91,15 +92,23 @@ export default class App extends Component<AppProps, AppState> {
         <Route
           path="/"
           exact
-          render={props => {
-            return <Todos {...props} auth={this.props.auth} />
+          render={(props) => {
+            return <Pets {...props} auth={this.props.auth} />
+          }}
+        />
+
+        <Route
+          path="/pets/create"
+          exact
+          render={(props) => {
+            return <CreatePet {...props} auth={this.props.auth} />
           }}
         />
 
         <Route
           path="/todos/:todoId/edit"
           exact
-          render={props => {
+          render={(props) => {
             return <EditTodo {...props} auth={this.props.auth} />
           }}
         />

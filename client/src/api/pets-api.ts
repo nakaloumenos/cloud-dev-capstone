@@ -1,20 +1,42 @@
+import { Pet } from './../types/Pet'
 import { apiEndpoint } from '../config'
 import { Todo } from '../types/Todo'
 import { CreateTodoRequest } from '../types/CreateTodoRequest'
 import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 
-export async function getTodos(idToken: string): Promise<Todo[]> {
-  console.log('Fetching todos')
+export async function getAvailablePets(idToken: string): Promise<Pet[]> {
+  console.log('Fetching available pets')
 
-  const response = await Axios.get(`${apiEndpoint}/hello`, {
+  const response = await Axios.get(`${apiEndpoint}/available-pets`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${idToken}`
     }
   })
-  console.log('Todos:', response.data)
+  console.log('Pets:', response.data)
   return response.data.items
+}
+
+export async function createPet(
+  idToken: string,
+  name: string,
+  description: string
+): Promise<Pet> {
+  const response = await Axios.post(
+    `${apiEndpoint}/pets`,
+    JSON.stringify({
+      name,
+      description
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`
+      }
+    }
+  )
+  return response.data.item
 }
 
 export async function createTodo(
