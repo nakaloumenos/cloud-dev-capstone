@@ -3,6 +3,7 @@ service:
 
 plugins:
   - serverless-webpack
+  - serverless-iam-roles-per-function
 
 provider:
   name: aws
@@ -11,15 +12,103 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
+  environment:
+    PETS_TABLE: WalkingPets-${self:provider.stage}
+    USER_ID_INDEX: UserIdIndex
+    PETS_IMAGES_S3_BUCKET: nakaloumenos-serverless-pets-images-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
+
 functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  hello:
-    handler: src/lambda/http/handler.handler
+  GetAvailablePets:
+    handler: src/lambda/http/getAvailablePets.handler
     events:
       - http:
           method: get
-          path: hello
+          path: available-pets
           cors: true
           authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}
+
+  CreatePet:
+    handler: src/lambda/http/createPet.handler
+    events:
+      - http:
+          method: post
+          path: pets
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}
+
+resources:
+  Resources:
+    PetsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: available
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: petId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: available
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.PETS_TABLE}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.USER_ID_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: petId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    AttachmentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.PETS_IMAGES_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: "*"
+              Action: "s3:GetObject"
+              Resource: "arn:aws:s3:::${self:provider.environment.PETS_IMAGES_S3_BUCKET}/*"
+        Bucket: !Ref AttachmentsBucket

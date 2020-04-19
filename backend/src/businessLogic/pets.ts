@@ -1,0 +1,31 @@
+import { CreatePetRequest } from "./../requests/CreatePetRequest";
+import * as uuid from "uuid";
+import { PetItem } from "../models/PetItem";
+import { PetAccess } from "../dataLayer/petsAccess";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger("auth");
+
+const petAccess = new PetAccess();
+
+export async function getAvailablePets(): Promise<PetItem[]> {
+  return await petAccess.getAvailablePets();
+}
+
+export async function createPet(
+  createPetRequest: CreatePetRequest,
+  userId: string
+): Promise<PetItem> {
+  logger.info("Generating uuid...");
+
+  const itemId = uuid.v4();
+
+  return await petAccess.createPet({
+    available: "true",
+    createdAt: new Date().toISOString(),
+    userId,
+    petId: itemId,
+    name: createPetRequest.name,
+    description: createPetRequest.description,
+  });
+}
