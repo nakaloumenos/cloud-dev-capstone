@@ -12,6 +12,10 @@ export async function getAvailablePets(): Promise<PetItem[]> {
   return await petAccess.getAvailablePets();
 }
 
+export async function getUserPets(userId: string): Promise<PetItem[]> {
+  return await petAccess.getUserPets(userId);
+}
+
 export async function createPet(
   createPetRequest: CreatePetRequest,
   userId: string
@@ -28,4 +32,8 @@ export async function createPet(
     name: createPetRequest.name,
     description: createPetRequest.description,
   });
+}
+
+export async function deletePet(userId: string, petId: string) {
+  return await petAccess.deletePet(userId, petId);
 }

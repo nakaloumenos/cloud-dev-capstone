@@ -14,29 +14,48 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { getAvailablePets, patchTodo } from '../api/pets-api'
+import { deletePet, patchTodo, getMyPets } from '../api/pets-api'
 import Auth from '../auth/Auth'
 import { Pet } from '../types/Pet'
 
-interface PetsProps {
+interface MyPetsProps {
   auth: Auth
   history: History
 }
 
-interface PetsState {
+interface MyPetsState {
   pets: Pet[]
   loadingPets: boolean
 }
 
-export class Pets extends React.PureComponent<PetsProps, PetsState> {
-  state: PetsState = {
+export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
+  state: MyPetsState = {
     pets: [],
     loadingPets: true
   }
 
+  onEditButtonClick = (petId: string) => {
+    this.props.history.push(`/pets/${petId}/edit`)
+  }
+
+  onPetDelete = async (petId: string) => {
+    try {
+      await deletePet(this.props.auth.getIdToken(), petId)
+      this.setState({
+        pets: this.state.pets.filter((pet) => pet.petId != petId)
+      })
+    } catch {
+      alert('Pet deletion failed')
+    }
+  }
+
+  onPetCreate = async () => {
+    this.props.history.push(`/pets/create`)
+  }
+
   async componentDidMount() {
     try {
-      const pets = await getAvailablePets(this.props.auth.getIdToken())
+      const pets = await getMyPets(this.props.auth.getIdToken())
       this.setState({
         pets,
         loadingPets: false
@@ -49,14 +68,27 @@ export class Pets extends React.PureComponent<PetsProps, PetsState> {
   render() {
     return (
       <div>
-        <Header as="h1">Available Pets</Header>
-        <Header as="h3">
-          You are stuck in the house cuz you don't have good excuses to go out
-          during this lockdown? Fear no more!
-        </Header>
+        <Header as="h1">My pets</Header>
+
+        {this.renderCreatePetInput()}
 
         {this.renderPets()}
       </div>
+    )
+  }
+
+  renderCreatePetInput() {
+    return (
+      <Grid.Row>
+        <Grid.Column width={16}>
+          <Button color="teal" onClick={this.onPetCreate}>
+            Add New Pet
+          </Button>
+        </Grid.Column>
+        <Grid.Column width={16}>
+          <Divider />
+        </Grid.Column>
+      </Grid.Row>
     )
   }
 
@@ -89,6 +121,24 @@ export class Pets extends React.PureComponent<PetsProps, PetsState> {
               </Grid.Column>
               <Grid.Column width={3} floated="right">
                 {pet.description}
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="blue"
+                  onClick={() => this.onEditButtonClick(pet.petId)}
+                >
+                  <Icon name="pencil" />
+                </Button>
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="red"
+                  onClick={() => this.onPetDelete(pet.petId)}
+                >
+                  <Icon name="delete" />
+                </Button>
               </Grid.Column>
               {pet.attachmentUrl && (
                 <Image src={pet.attachmentUrl} size="small" wrapped />

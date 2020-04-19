@@ -11,13 +11,15 @@ const logger = createLogger("auth");
 export class PetAccess {
   constructor(
     private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
-    private readonly petsTable = process.env.PETS_TABLE
+    private readonly petsTable = process.env.PETS_TABLE,
+    private readonly avaibleIndex = process.env.AVAILABLE_INDEX
   ) {}
 
   async getAvailablePets(): Promise<PetItem[]> {
     const result = await this.docClient
       .query({
         TableName: this.petsTable,
+        IndexName: this.avaibleIndex,
         KeyConditionExpression: "available = :available",
         ExpressionAttributeValues: {
           ":available": "true",
@@ -26,6 +28,24 @@ export class PetAccess {
       .promise();
 
     logger.info(`Found ${result.Count} available pets for walking`);
+
+    const items = result.Items;
+
+    return items as PetItem[];
+  }
+
+  async getUserPets(userId: string): Promise<PetItem[]> {
+    const result = await this.docClient
+      .query({
+        TableName: this.petsTable,
+        KeyConditionExpression: "userId = :userId",
+        ExpressionAttributeValues: {
+          ":userId": userId,
+        },
+      })
+      .promise();
+
+    logger.info(`Found ${result.Count} available pets for user ${userId}`);
 
     const items = result.Items;
 
@@ -43,5 +63,19 @@ export class PetAccess {
     logger.info(`Saved new pet ${pet.petId} for user ${pet.userId}`);
 
     return pet;
+  }
+
+  async deletePet(userId: string, petId: string) {
+    await this.docClient
+      .delete({
+        TableName: this.petsTable,
+        Key: {
+          userId,
+          petId,
+        },
+      })
+      .promise();
+
+    logger.info(`Deleted todo item ${petId}`);
   }
 }
