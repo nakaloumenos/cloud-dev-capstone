@@ -3,11 +3,12 @@ import { Link, Route, Router, Switch } from 'react-router-dom'
 import { Grid, Menu, Segment } from 'semantic-ui-react'
 
 import Auth from './auth/Auth'
-import { EditTodo } from './components/EditTodo'
+import { EditPet } from './components/EditPet'
 import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Pets } from './components/Pets'
 import { CreatePet } from './components/CreatePet'
+import { MyPets } from './components/MyPets'
 
 export interface AppProps {}
 
@@ -24,6 +25,10 @@ export default class App extends Component<AppProps, AppState> {
 
     this.handleLogin = this.handleLogin.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
+  }
+
+  handleMyPets() {
+    this.props.history.push(`/pets/me`)
   }
 
   handleLogin() {
@@ -59,6 +64,9 @@ export default class App extends Component<AppProps, AppState> {
       <Menu>
         <Menu.Item name="home">
           <Link to="/">Home</Link>
+        </Menu.Item>
+        <Menu.Item name="myPets">
+          <Link to="/pets/me">My Pets</Link>
         </Menu.Item>
 
         <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
@@ -106,10 +114,18 @@ export default class App extends Component<AppProps, AppState> {
         />
 
         <Route
-          path="/todos/:todoId/edit"
+          path="/pets/me"
           exact
           render={(props) => {
-            return <EditTodo {...props} auth={this.props.auth} />
+            return <MyPets {...props} auth={this.props.auth} />
+          }}
+        />
+
+        <Route
+          path="/pets/:petId/edit"
+          exact
+          render={(props) => {
+            return <EditPet {...props} auth={this.props.auth} />
           }}
         />
 

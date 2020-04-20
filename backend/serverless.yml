@@ -13,8 +13,8 @@ provider:
   region: ${opt:region, 'us-east-1'}
 
   environment:
-    PETS_TABLE: WalkingPets-${self:provider.stage}
-    USER_ID_INDEX: UserIdIndex
+    PETS_TABLE: Pets-${self:provider.stage}
+    AVAILABLE_INDEX: AvailableIndex
     PETS_IMAGES_S3_BUCKET: nakaloumenos-serverless-pets-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
@@ -27,7 +27,21 @@ functions:
     events:
       - http:
           method: get
-          path: available-pets
+          path: pets/available
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}/index/${self:provider.environment.AVAILABLE_INDEX}
+
+  GetUserPets:
+    handler: src/lambda/http/getUserPets.handler
+    events:
+      - http:
+          method: get
+          path: pets/me
           cors: true
           authorizer: Auth
     iamRoleStatements:
@@ -50,33 +64,66 @@ functions:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}
 
+  DeletePet:
+    handler: src/lambda/http/deletePet.handler
+    events:
+      - http:
+          method: delete
+          path: pets/{petId}
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}
+
+  GenerateUploadUrl:
+    handler: src/lambda/http/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          path: pets/{petId}/attachment
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.PETS_IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PETS_TABLE}
+
 resources:
   Resources:
     PetsTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: available
-            AttributeType: S
-          - AttributeName: createdAt
-            AttributeType: S
           - AttributeName: userId
             AttributeType: S
           - AttributeName: petId
             AttributeType: S
-        KeySchema:
           - AttributeName: available
-            KeyType: HASH
+            AttributeType: S
           - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: petId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.PETS_TABLE}
         GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.USER_ID_INDEX}
+          - IndexName: ${self:provider.environment.AVAILABLE_INDEX}
             KeySchema:
-              - AttributeName: userId
+              - AttributeName: available
                 KeyType: HASH
-              - AttributeName: petId
+              - AttributeName: createdAt
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
