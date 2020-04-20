@@ -74,8 +74,8 @@ functions:
           authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
-            summary: Create a new todo item
-            description: Create a new todo item
+            summary: Create a new pet
+            description: Create a pet
             requestModels:
               "application/json": CreateRequest
     iamRoleStatements:

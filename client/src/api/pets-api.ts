@@ -1,7 +1,6 @@
 import { Pet } from './../types/Pet'
 import { apiEndpoint } from '../config'
 import Axios from 'axios'
-import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 
 export async function getAvailablePets(idToken: string): Promise<Pet[]> {
   console.log('Fetching available pets')
@@ -48,23 +47,6 @@ export async function createPet(
     }
   )
   return response.data.item
-}
-
-export async function patchTodo(
-  idToken: string,
-  todoId: string,
-  updatedTodo: UpdateTodoRequest
-): Promise<void> {
-  await Axios.patch(
-    `${apiEndpoint}/todos/${todoId}`,
-    JSON.stringify(updatedTodo),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`
-      }
-    }
-  )
 }
 
 export async function walkPet(
