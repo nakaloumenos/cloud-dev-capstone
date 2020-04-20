@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { deletePet, patchTodo, getMyPets } from '../api/pets-api'
+import { deletePet, getMyPets } from '../api/pets-api'
 import Auth from '../auth/Auth'
 import { Pet } from '../types/Pet'
 
@@ -68,7 +68,7 @@ export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
   render() {
     return (
       <div>
-        <Header as="h1">My pets</Header>
+        <Header as="h1">Are you a pet owner? Support the community</Header>
 
         {this.renderCreatePetInput()}
 
@@ -128,7 +128,7 @@ export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
                   color="blue"
                   onClick={() => this.onEditButtonClick(pet.petId)}
                 >
-                  <Icon name="pencil" />
+                  <Icon name="photo" />
                 </Button>
               </Grid.Column>
               <Grid.Column width={1} floated="right">

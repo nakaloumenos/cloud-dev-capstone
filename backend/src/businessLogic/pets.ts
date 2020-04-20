@@ -37,3 +37,7 @@ export async function createPet(
 export async function deletePet(userId: string, petId: string) {
   return await petAccess.deletePet(userId, petId);
 }
+
+export async function updateUrl(userId: string, petId: string) {
+  await petAccess.updateUrl(userId, petId);
+}

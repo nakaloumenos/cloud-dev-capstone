@@ -12,7 +12,8 @@ export class PetAccess {
   constructor(
     private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
     private readonly petsTable = process.env.PETS_TABLE,
-    private readonly avaibleIndex = process.env.AVAILABLE_INDEX
+    private readonly avaibleIndex = process.env.AVAILABLE_INDEX,
+    private readonly bucketName = process.env.PETS_IMAGES_S3_BUCKET
   ) {}
 
   async getAvailablePets(): Promise<PetItem[]> {
@@ -76,6 +77,25 @@ export class PetAccess {
       })
       .promise();
 
-    logger.info(`Deleted todo item ${petId}`);
+    logger.info(`Deleted pet ${petId}`);
+  }
+
+  async updateUrl(userId: string, petId: string) {
+    await this.docClient
+      .update({
+        TableName: this.petsTable,
+        Key: {
+          userId,
+          petId,
+        },
+        UpdateExpression: "set #attachmentUrl = :attachmentUrl",
+        ExpressionAttributeValues: {
+          ":attachmentUrl": `https://${this.bucketName}.s3.amazonaws.com/${petId}`,
+        },
+        ExpressionAttributeNames: {
+          "#attachmentUrl": "attachmentUrl",
+        },
+      })
+      .promise();
   }
 }

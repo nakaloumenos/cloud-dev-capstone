@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { getAvailablePets, patchTodo } from '../api/pets-api'
+import { getAvailablePets } from '../api/pets-api'
 import Auth from '../auth/Auth'
 import { Pet } from '../types/Pet'
 
@@ -49,10 +49,8 @@ export class Pets extends React.PureComponent<PetsProps, PetsState> {
   render() {
     return (
       <div>
-        <Header as="h1">Available Pets</Header>
-        <Header as="h3">
-          You are stuck in the house cuz you don't have good excuses to go out
-          during this lockdown? Fear no more!
+        <Header as="h1">
+          Available pets to walk and pretend they are yours...
         </Header>
 
         {this.renderPets()}

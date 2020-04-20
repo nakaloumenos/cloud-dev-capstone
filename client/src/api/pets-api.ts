@@ -1,7 +1,5 @@
 import { Pet } from './../types/Pet'
 import { apiEndpoint } from '../config'
-import { Todo } from '../types/Todo'
-import { CreateTodoRequest } from '../types/CreateTodoRequest'
 import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 
@@ -52,23 +50,6 @@ export async function createPet(
   return response.data.item
 }
 
-export async function createTodo(
-  idToken: string,
-  newTodo: CreateTodoRequest
-): Promise<Todo> {
-  const response = await Axios.post(
-    `${apiEndpoint}/todos`,
-    JSON.stringify(newTodo),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`
-      }
-    }
-  )
-  return response.data.item
-}
-
 export async function patchTodo(
   idToken: string,
   todoId: string,
@@ -97,10 +78,10 @@ export async function deletePet(idToken: string, petId: string): Promise<void> {
 
 export async function getUploadUrl(
   idToken: string,
-  todoId: string
+  petId: string
 ): Promise<string> {
   const response = await Axios.post(
-    `${apiEndpoint}/todos/${todoId}/attachment`,
+    `${apiEndpoint}/pets/${petId}/attachment`,
     '',
     {
       headers: {
