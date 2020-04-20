@@ -66,6 +66,44 @@ export class PetAccess {
     return pet;
   }
 
+  async walkPet(userId: string, petId: string) {
+    await this.docClient
+      .update({
+        TableName: this.petsTable,
+        Key: {
+          userId,
+          petId,
+        },
+        UpdateExpression: "set #available = :available",
+        ExpressionAttributeValues: {
+          ":available": "false",
+        },
+        ExpressionAttributeNames: {
+          "#available": "available",
+        },
+      })
+      .promise();
+  }
+
+  async availablePet(userId: string, petId: string) {
+    await this.docClient
+      .update({
+        TableName: this.petsTable,
+        Key: {
+          userId,
+          petId,
+        },
+        UpdateExpression: "set #available = :available",
+        ExpressionAttributeValues: {
+          ":available": "true",
+        },
+        ExpressionAttributeNames: {
+          "#available": "available",
+        },
+      })
+      .promise();
+  }
+
   async deletePet(userId: string, petId: string) {
     await this.docClient
       .delete({

@@ -67,6 +67,39 @@ export async function patchTodo(
   )
 }
 
+export async function walkPet(
+  idToken: string,
+  petId: string,
+  userId: string
+): Promise<void> {
+  await Axios.patch(
+    `${apiEndpoint}/pets/${petId}/${userId}/walk`,
+    {},
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`
+      }
+    }
+  )
+}
+
+export async function availablePet(
+  idToken: string,
+  petId: string
+): Promise<void> {
+  await Axios.patch(
+    `${apiEndpoint}/pets/${petId}/available`,
+    {},
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`
+      }
+    }
+  )
+}
+
 export async function deletePet(idToken: string, petId: string): Promise<void> {
   await Axios.delete(`${apiEndpoint}/pets/${petId}`, {
     headers: {

@@ -11,10 +11,11 @@ import {
   Icon,
   Input,
   Image,
-  Loader
+  Loader,
+  GridColumn
 } from 'semantic-ui-react'
 
-import { deletePet, getMyPets } from '../api/pets-api'
+import { deletePet, getMyPets, availablePet } from '../api/pets-api'
 import Auth from '../auth/Auth'
 import { Pet } from '../types/Pet'
 
@@ -46,6 +47,25 @@ export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
       })
     } catch {
       alert('Pet deletion failed')
+    }
+  }
+
+  onAvailableButtonClick = async (petId: string, pos: number) => {
+    try {
+      const pet = this.state.pets[pos]
+      await availablePet(this.props.auth.getIdToken(), petId)
+      alert(`${pet.name} is available for fake walks again`)
+      const pets = this.state.pets.map((pet) => {
+        if (pet.petId === petId) {
+          pet.available = 'true'
+        }
+        return pet
+      })
+      this.setState({
+        pets
+      })
+    } catch {
+      alert('Pet walk failed')
     }
   }
 
@@ -116,11 +136,20 @@ export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
         {this.state.pets.map((pet, pos) => {
           return (
             <Grid.Row key={pet.petId}>
-              <Grid.Column width={10} verticalAlign="middle">
-                {pet.name}
-              </Grid.Column>
-              <Grid.Column width={3} floated="right">
+              <Grid.Column width={1}>{pet.name}</Grid.Column>
+              <Grid.Column width={6} floated="right">
                 {pet.description}
+              </Grid.Column>
+              <Grid.Column width={2} floated="right">
+                {pet.available === 'false' && (
+                  <Button
+                    icon
+                    color="green"
+                    onClick={() => this.onAvailableButtonClick(pet.petId, pos)}
+                  >
+                    Make Available
+                  </Button>
+                )}
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
@@ -140,9 +169,11 @@ export class MyPets extends React.PureComponent<MyPetsProps, MyPetsState> {
                   <Icon name="delete" />
                 </Button>
               </Grid.Column>
-              {pet.attachmentUrl && (
-                <Image src={pet.attachmentUrl} size="small" wrapped />
-              )}
+              <GridColumn width={4} floated="left">
+                {pet.attachmentUrl && (
+                  <Image src={pet.attachmentUrl} size="small" wrapped />
+                )}
+              </GridColumn>
               <Grid.Column width={16}>
                 <Divider />
               </Grid.Column>
