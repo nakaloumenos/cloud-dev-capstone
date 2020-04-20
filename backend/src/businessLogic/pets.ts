@@ -34,6 +34,14 @@ export async function createPet(
   });
 }
 
+export async function walkPet(userId: string, petId: string) {
+  return await petAccess.walkPet(userId, petId);
+}
+
+export async function availablePet(userId: string, petId: string) {
+  return await petAccess.availablePet(userId, petId);
+}
+
 export async function deletePet(userId: string, petId: string) {
   return await petAccess.deletePet(userId, petId);
 }

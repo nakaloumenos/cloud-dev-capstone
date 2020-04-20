@@ -1,5 +1,5 @@
 export interface Pet {
-  available: boolean
+  available: string
   createdAt: string
   userId: string
   petId: string

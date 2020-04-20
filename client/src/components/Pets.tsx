@@ -13,8 +13,7 @@ import {
   Image,
   Loader
 } from 'semantic-ui-react'
-
-import { getAvailablePets } from '../api/pets-api'
+import { getAvailablePets, walkPet } from '../api/pets-api'
 import Auth from '../auth/Auth'
 import { Pet } from '../types/Pet'
 
@@ -32,6 +31,18 @@ export class Pets extends React.PureComponent<PetsProps, PetsState> {
   state: PetsState = {
     pets: [],
     loadingPets: true
+  }
+
+  onWalkButtonClick = async (petId: string, userId: string) => {
+    try {
+      await walkPet(this.props.auth.getIdToken(), petId, userId)
+      alert('Ready for your fake walk')
+      this.setState({
+        pets: this.state.pets.filter((pet) => pet.petId !== petId)
+      })
+    } catch {
+      alert('Pet walk failed')
+    }
   }
 
   async componentDidMount() {
@@ -82,11 +93,18 @@ export class Pets extends React.PureComponent<PetsProps, PetsState> {
         {this.state.pets.map((pet, pos) => {
           return (
             <Grid.Row key={pet.petId}>
-              <Grid.Column width={10} verticalAlign="middle">
-                {pet.name}
-              </Grid.Column>
-              <Grid.Column width={3} floated="right">
+              <Grid.Column width={3}>{pet.name}</Grid.Column>
+              <Grid.Column width={10} floated="right">
                 {pet.description}
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="orange"
+                  onClick={() => this.onWalkButtonClick(pet.petId, pet.userId)}
+                >
+                  Walk
+                </Button>
               </Grid.Column>
               {pet.attachmentUrl && (
                 <Image src={pet.attachmentUrl} size="small" wrapped />
